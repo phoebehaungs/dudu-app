@@ -11,7 +11,7 @@ import {
   query, 
   orderBy 
 } from 'firebase/firestore';
-// 引入圖表套件  
+// 引入圖表套件 (已修正：移除了多餘的 Label)
 import { 
   LineChart, 
   Line, 
@@ -19,7 +19,7 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
+  ResponsiveContainer
 } from 'recharts';
 
 // --- 常數設定 ---
@@ -82,7 +82,6 @@ const calculateAgeLabel = (dateString: string) => {
   const months = Math.floor(diffDays / 30);
   const days = diffDays % 30;
   
-  // 如果天數很少，只顯示月
   if (days < 5) return `${months}個月`;
   return `${months}個月${days}天`;
 };
@@ -124,7 +123,6 @@ function App() {
 
   // --- 監聽雲端資料 (體重) ---
   useEffect(() => {
-    // 體重我們要依照日期「由舊到新」排序，這樣折線圖才會從左畫到右
     const q = query(collection(db, "weight_records"), orderBy("date", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data: WeightRecord[] = [];
@@ -187,7 +185,6 @@ function App() {
         timestamp: new Date(measureDate).getTime()
       });
       setWeightInput('');
-      // 日期維持不動，方便連續輸入
     } catch (error) {
       console.error(error);
       alert("體重上傳失敗");
@@ -220,10 +217,9 @@ function App() {
   };
 
   // --- 準備圖表資料 ---
-  // 把資料轉換成圖表看得懂的格式，並加上年齡標籤
   const chartData = weightRecords.map(rec => ({
     ...rec,
-    ageLabel: calculateAgeLabel(rec.date), // 計算當下的年齡
+    ageLabel: calculateAgeLabel(rec.date),
   }));
 
   const getCategoryLabel = (val: CategoryType) => categoryOptions.find(c => c.value === val)?.label;
@@ -240,7 +236,8 @@ function App() {
   return (
     <div className="container">
       <header>
-        <h1>✨ 肚肚成長日記 (雲端版) ✨</h1>
+        {/* 1. 修改標題 */}
+        <h1>肚肚の記錄</h1>
         <p className="subtitle">生日：2025/04/01</p>
         
         {/* 分頁切換按鈕 */}
@@ -249,7 +246,8 @@ function App() {
             className={`tab-btn ${currentTab === 'food' ? 'active' : ''}`}
             onClick={() => setCurrentTab('food')}
           >
-            🍽️ 飲食紀錄
+            {/* 2. 修改頁籤名稱 */}
+            🥫各類用品
           </button>
           <button 
             className={`tab-btn ${currentTab === 'weight' ? 'active' : ''}`}
@@ -260,15 +258,16 @@ function App() {
         </div>
       </header>
 
-      {/* --- 頁面 1: 飲食紀錄 --- */}
+      {/* --- 頁面 1: 各類用品 --- */}
       {currentTab === 'food' && (
         <>
           <div className={`input-card card-elevation ${editingId ? 'editing-mode' : ''}`}>
             <div className="form-header">
               {editingId ? (
-                 <h3 style={{color: '#e67e22', margin: 0}}>✏️ 修改飲食紀錄</h3>
+                 <h3 style={{color: '#e67e22', margin: 0}}>✏️ 修改記錄</h3>
                ) : (
-                 <h3 style={{margin: 0}}>📝 新增飲食紀錄</h3>
+                 // 3. 修改新增標題
+                 <h3 style={{margin: 0}}>新增一筆記錄</h3>
                )}
                {editingId && (
                  <button type="button" onClick={handleCancelEdit} className="cancel-btn">取消</button>
@@ -365,30 +364,18 @@ function App() {
                 <ResponsiveContainer>
                   <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                     <CartesianGrid stroke="#f5f5f5" />
-                    {/* X軸顯示年齡 */}
                     <XAxis 
                       dataKey="date" 
                       tickFormatter={(date) => calculateAgeLabel(date)}
                       stroke="#95a5a6"
                       fontSize={12}
                     />
-                    <YAxis 
-                      unit="kg" 
-                      stroke="#95a5a6"
-                      domain={['auto', 'auto']} // 自動調整範圍
-                    />
+                    <YAxis unit="kg" stroke="#95a5a6" domain={['auto', 'auto']} />
                     <Tooltip 
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
                       labelFormatter={(date) => `${date} (${calculateAgeLabel(date as string)})`}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="weight" 
-                      name="體重"
-                      stroke="#e67e22" 
-                      strokeWidth={3}
-                      activeDot={{ r: 8 }} 
-                    />
+                    <Line type="monotone" dataKey="weight" name="體重" stroke="#e67e22" strokeWidth={3} activeDot={{ r: 8 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -404,23 +391,11 @@ function App() {
               <div className="form-row">
                 <div className="form-group" style={{flex: 1}}>
                   <label>測量日期</label>
-                  <input 
-                    type="date" 
-                    value={measureDate}
-                    onChange={(e) => setMeasureDate(e.target.value)}
-                    className="styled-input"
-                  />
+                  <input type="date" value={measureDate} onChange={(e) => setMeasureDate(e.target.value)} className="styled-input" />
                 </div>
                 <div className="form-group" style={{flex: 1}}>
                   <label>體重 (kg)</label>
-                  <input 
-                    type="number" 
-                    step="0.01" 
-                    value={weightInput}
-                    onChange={(e) => setWeightInput(e.target.value)}
-                    placeholder="例如 1.5"
-                    className="styled-input"
-                  />
+                  <input type="number" step="0.01" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} placeholder="例如 1.5" className="styled-input" />
                 </div>
               </div>
               <button type="submit" className="submit-btn" disabled={isSubmitting}>
@@ -429,17 +404,15 @@ function App() {
             </form>
           </div>
 
-          {/* 3. 歷史列表 (方便刪除) */}
+          {/* 3. 歷史列表 */}
           <div className="records-section">
             <h4>詳細數據 ({weightRecords.length})</h4>
             <ul className="record-list">
-              {[...weightRecords].reverse().map((rec) => ( // 列表這邊倒序顯示，最新的在上面
+              {[...weightRecords].reverse().map((rec) => (
                 <li key={rec.id} className="record-card card-elevation" style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
                   <div>
                     <span className="date">{rec.date} ({calculateAgeLabel(rec.date)})</span>
-                    <div className="card-title" style={{fontSize: '1.2rem', color: '#e67e22'}}>
-                      {rec.weight} kg
-                    </div>
+                    <div className="card-title" style={{fontSize: '1.2rem', color: '#e67e22'}}>{rec.weight} kg</div>
                   </div>
                   <button className="delete-btn" onClick={() => handleDelete(rec.id, "weight_records")}>×</button>
                 </li>
