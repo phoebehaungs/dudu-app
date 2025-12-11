@@ -1,0 +1,330 @@
+/* --- 質感配色與變數定義 --- */
+:root {
+  --primary: #E07A5F;
+  --primary-hover: #D06A50;
+  --bg-color: #F7F5F2;
+  --card-bg: #FFFFFF;
+  --text-dark: #3D405B;
+  --text-muted: #818391;
+  --border-color: #EAEAEA;
+  --gold: #F2CC8F;
+  --muted-gray: #E0E0E0;
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-elevation: 0 10px 30px -10px rgba(61, 64, 91, 0.1);
+}
+
+/* 讓 html 和 body 佔滿整個視窗高度 */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+/* 關鍵修正：讓 React 的根目錄 #root 變成置中容器 */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;             /* 開啟 Flexbox */
+  justify-content: center;   /* 水平置中 */
+  align-items: flex-start;   /* 垂直靠上 */
+}
+
+/* 容器設定 */
+.container {
+  width: 100%;
+  max-width: 550px;          /* 電腦版最大寬度 */
+  margin: 0;                 /* 由 #root 負責置中，這裡歸零 */
+  padding: 20px 15px;        /* 上下 20px，左右 15px */
+  box-sizing: border-box;    /* 確保 padding 不會撐大寬度 */
+}
+
+/* --- Header --- */
+header {
+  text-align: center;
+  margin-bottom: 25px;
+  padding: 0 5px;
+}
+
+h1 {
+  color: var(--text-dark);
+  font-size: 1.5rem; /* 手機版預設字體 */
+  margin-bottom: 5px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+/* 電腦版調整 (螢幕大於 480px) */
+@media (min-width: 480px) {
+  h1 { font-size: 1.8rem; }
+  .container { padding: 40px 20px; }
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* --- 通用卡片樣式 --- */
+.card-elevation {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevation);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* --- 輸入區塊 --- */
+.input-card {
+  padding: 20px;
+  margin-bottom: 30px;
+}
+@media (min-width: 480px) {
+  .input-card { padding: 30px; }
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+@media (max-width: 480px) {
+  .form-row { flex-direction: column; gap: 15px; }
+  .form-row .form-group { margin-bottom: 0; }
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.styled-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  box-sizing: border-box;
+  background: #FAFAFC;
+  transition: all 0.3s ease;
+  color: var(--text-dark);
+}
+
+.styled-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+}
+
+textarea.styled-input {
+  resize: vertical;
+}
+
+/* --- 星星評分 --- */
+.star-rating {
+  display: flex;
+  gap: 8px;
+}
+
+.star {
+  font-size: 32px;
+  cursor: pointer;
+  color: var(--muted-gray);
+  transition: color 0.2s;
+  user-select: none; 
+  -webkit-tap-highlight-color: transparent;
+}
+@media (min-width: 480px) {
+  .star { font-size: 36px; }
+}
+
+.star:hover,
+.star.filled {
+  color: var(--gold);
+}
+
+/* --- 按鈕 --- */
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+  box-shadow: 0 4px 12px rgba(224, 122, 95, 0.3);
+}
+
+.submit-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* --- 列表控制區 --- */
+.records-section {
+  margin-top: 10px;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+@media (min-width: 480px) {
+  .section-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.records-section h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  font-weight: 700;
+  padding-left: 10px;
+  border-left: 4px solid var(--primary);
+}
+
+.filter-controls {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+@media (min-width: 480px) {
+  .filter-controls { width: auto; }
+}
+
+.filter-select {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: white;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+/* --- 列表項目 --- */
+.record-list {
+  list-style: none;
+  padding: 0;
+}
+
+.record-card {
+  padding: 15px;
+  margin-bottom: 15px;
+  position: relative;
+}
+@media (min-width: 480px) {
+  .record-card { padding: 20px; }
+}
+
+.delete-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #F0F0F3;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 16px;
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-right: 30px;
+}
+
+.category-tag {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.tag-canned { background: #E8F4FD; color: #3498DB; }
+.tag-pouch { background: #FDF2E9; color: #E67E22; }
+.tag-dry { background: #EAFBF1; color: #2ECC71; }
+.tag-litter { background: #F4F6F7; color: #7F8C8D; }
+.tag-raw { background: #F9EBEA; color: #C0392B; }
+
+.date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.card-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 5px;
+}
+@media (min-width: 480px) {
+  .card-main {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.flavor {
+  display: inline-block;
+  font-weight: normal;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-left: 5px;
+}
+
+.card-notes {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
+  font-size: 0.9rem;
+  color: #666;
+  white-space: pre-line;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  margin-top: 30px;
+}
+
+.star-small {
+    font-size: 1.1rem;
+}
