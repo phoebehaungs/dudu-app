@@ -11,7 +11,6 @@ import {
   query, 
   orderBy 
 } from 'firebase/firestore';
-// 引入圖表套件
 import { 
   LineChart, 
   Line, 
@@ -22,16 +21,15 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-// --- 🔥 引入標題的貓咪圖片 ---
+// 引入圖片
 import duduLogo from './dudu-logo.png'; 
 
 // --- 常數設定 ---
-// 🎂 肚肚的生日
 const DUDU_BIRTHDAY = "2025-04-01";
 
 // --- 型別定義 ---
 type CategoryType = 'canned' | 'pouch' | 'dry' | 'litter' | 'raw';
-type TabType = 'food' | 'weight'; // 分頁狀態
+type TabType = 'food' | 'weight'; 
 
 interface FoodRecord {
   id: string;
@@ -46,8 +44,8 @@ interface FoodRecord {
 
 interface WeightRecord {
   id: string;
-  weight: number;     // 公斤
-  date: string;       // 測量日期 (YYYY-MM-DD)
+  weight: number;    
+  date: string;      
   timestamp: number;
 }
 
@@ -72,29 +70,25 @@ const defaultBrandData: BrandDatabase = {
   litter: ["EverClean 藍鑽", "Boxiecat", "OdourLock", "鐵鎚牌"]
 };
 
-// --- 工具函式：計算年齡 (回傳字串，例如 "2個月") ---
+// --- 工具函式：計算年齡 ---
 const calculateAgeLabel = (dateString: string) => {
   const birth = new Date(DUDU_BIRTHDAY);
   const target = new Date(dateString);
-  
   const diffTime = Math.abs(target.getTime() - birth.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
   
   if (diffDays < 30) return `${diffDays}天`;
-  
   const months = Math.floor(diffDays / 30);
   const days = diffDays % 30;
-  
   if (days < 5) return `${months}個月`;
   return `${months}個月${days}天`;
 };
 
 // --- 主元件 ---
 function App() {
-  // 分頁狀態
   const [currentTab, setCurrentTab] = useState<TabType>('food');
-
-  // --- 飲食紀錄狀態 ---
+  
+  // 飲食紀錄狀態
   const [foodRecords, setFoodRecords] = useState<FoodRecord[]>([]);
   const [category, setCategory] = useState<CategoryType>('canned');
   const [brand, setBrand] = useState<string>('');
@@ -104,16 +98,15 @@ function App() {
   const [filterCategory, setFilterCategory] = useState<CategoryType | 'all'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'brand' | 'rating'>('date');
   
-  // --- 體重紀錄狀態 ---
+  // 體重紀錄狀態
   const [weightRecords, setWeightRecords] = useState<WeightRecord[]>([]);
   const [weightInput, setWeightInput] = useState<string>('');
   const [measureDate, setMeasureDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
-  // 通用狀態
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // --- 監聽雲端資料 (飲食) ---
+  // 監聽飲食資料
   useEffect(() => {
     const q = query(collection(db, "records"), orderBy("timestamp", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -124,7 +117,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- 監聽雲端資料 (體重) ---
+  // 監聽體重資料
   useEffect(() => {
     const q = query(collection(db, "weight_records"), orderBy("date", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -135,15 +128,11 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // 計算飲食用的品牌清單
   const availableBrands = Array.from(new Set([
     ...defaultBrandData[category], 
-    ...foodRecords
-      .filter(r => r.category === category) 
-      .map(r => r.brand) 
+    ...foodRecords.filter(r => r.category === category).map(r => r.brand) 
   ]));
 
-  // --- 飲食紀錄送出 ---
   const handleFoodSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!brand || !flavor || rating === 0) {
@@ -173,7 +162,6 @@ function App() {
     }
   };
 
-  // --- 體重紀錄送出 ---
   const handleWeightSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!weightInput || !measureDate) {
@@ -196,7 +184,6 @@ function App() {
     }
   };
 
-  // 編輯/刪除相關函式
   const handleEdit = (rec: FoodRecord) => {
     setEditingId(rec.id);
     setCategory(rec.category);
@@ -219,7 +206,6 @@ function App() {
     }
   };
 
-  // --- 準備圖表資料 ---
   const chartData = weightRecords.map(rec => ({
     ...rec,
     ageLabel: calculateAgeLabel(rec.date),
@@ -239,14 +225,24 @@ function App() {
   return (
     <div className="container">
       <header>
-        {/* 🔥 修改標題：加入圖片 */}
-        <h1>
-          <img src={duduLogo} className="title-icon" alt="肚肚的Logo" />
+        {/* 🔥 修正：這裡用 style 強制設定圖片大小，絕對不會跑版 */}
+        <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img 
+            src={duduLogo} 
+            alt="肚肚的Logo" 
+            style={{ 
+              width: '60px',       // 強制寬度 60px
+              height: '60px',      // 強制高度 60px
+              borderRadius: '50%', // 圓形
+              objectFit: 'cover',  // 圖片內容填滿不變形
+              marginRight: '15px', // 右邊留空隙
+              boxShadow: '0 2px 5px rgba(0,0,0,0.2)' // 加一點陰影
+            }} 
+          />
           肚肚の記錄
         </h1>
         <p className="subtitle">生日：2025/04/01</p>
         
-        {/* 分頁切換按鈕 */}
         <div className="tab-container">
           <button 
             className={`tab-btn ${currentTab === 'food' ? 'active' : ''}`}
@@ -263,7 +259,7 @@ function App() {
         </div>
       </header>
 
-      {/* --- 頁面 1: 各類用品 --- */}
+      {/* 頁面 1: 各類用品 */}
       {currentTab === 'food' && (
         <>
           <div className={`input-card card-elevation ${editingId ? 'editing-mode' : ''}`}>
@@ -356,11 +352,9 @@ function App() {
         </>
       )}
 
-      {/* --- 頁面 2: 體重追蹤 --- */}
+      {/* 頁面 2: 體重追蹤 */}
       {currentTab === 'weight' && (
         <div className="weight-section">
-          
-          {/* 1. 圖表區域 */}
           <div className="chart-card card-elevation">
             <h3 className="chart-title">📈 成長曲線 (體重 vs 年齡)</h3>
             {chartData.length > 0 ? (
@@ -388,7 +382,6 @@ function App() {
             )}
           </div>
 
-          {/* 2. 輸入區域 */}
           <div className="input-card card-elevation">
             <h3>⚖️ 紀錄體重</h3>
             <form onSubmit={handleWeightSubmit} className="weight-form">
@@ -408,7 +401,6 @@ function App() {
             </form>
           </div>
 
-          {/* 3. 歷史列表 */}
           <div className="records-section">
             <h4>詳細數據 ({weightRecords.length})</h4>
             <ul className="record-list">
@@ -423,7 +415,6 @@ function App() {
               ))}
             </ul>
           </div>
-
         </div>
       )}
     </div>
