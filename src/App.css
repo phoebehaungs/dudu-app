@@ -1,17 +1,335 @@
-/* --- 標題小圖示設定 --- */
-.title-icon {
-  width: 48px;        /* 設定圖片寬度 */
-  height: 48px;       /* 設定圖片高度 */
-  border-radius: 50%; /* 讓圖片變圓形，看起來更像 Logo */
-  object-fit: cover;  /* 確保圖片填滿圓形區域，不變形 */
-  margin-right: 12px; /* 圖片跟文字之間的距離 */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 加一點點陰影，更有立體感 */
+/* --- 全域設定 --- */
+:root {
+  --primary-color: #f39c12; /* 橘色主色 */
+  --secondary-color: #e67e22;
+  --bg-color: #fdfbf7;      /* 米色背景 */
+  --text-color: #2c3e50;
+  --card-bg: #ffffff;
+  --gold: #f1c40f;
+  --muted-gray: #bdc3c7;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 卡片陰影 */
 }
 
-/* 讓標題區塊 flex 佈局，圖片和文字可以垂直置中對齊 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 50px; /* 底部留白 */
+}
+
+/* --- Header & Tabs (標題與分頁) --- */
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* 讓標題與 Logo 圖片垂直置中 */
 h1 {
+  color: var(--text-color);
+  font-size: 1.8rem;
+  margin-bottom: 5px;
+  display: flex;         /* 關鍵：讓圖片跟文字橫向排列 */
+  align-items: center;   /* 關鍵：垂直置中 */
+  justify-content: center; /* 關鍵：水平置中 */
+}
+
+.subtitle {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.tab-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.tab-btn {
+  padding: 8px 20px;
+  border: none;
+  background: #eee;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #7f8c8d;
+  transition: all 0.3s;
+}
+
+.tab-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.4);
+}
+
+/* --- 卡片通用樣式 (讓東西變漂亮的關鍵) --- */
+.card-elevation {
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: transform 0.2s;
+}
+
+/* --- 輸入表單區域 --- */
+.input-card {
+  border-top: 5px solid var(--primary-color);
+}
+
+.editing-mode {
+  border-top: 5px solid #e67e22; /* 修改模式變深橘色 */
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.styled-input, select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #fff;
+}
+
+.styled-input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2);
+}
+
+textarea.styled-input {
+  resize: vertical;
+}
+
+/* 星星評分 */
+.star-rating {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--muted-gray);
+}
+
+.star.filled {
+  color: var(--gold);
+}
+
+/* 按鈕樣式 */
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: filter 0.3s;
+}
+
+.submit-btn:hover {
+  filter: brightness(1.1);
+}
+
+.submit-btn:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+/* --- 歷史紀錄清單 --- */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-select {
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  font-size: 0.85rem;
+  background: white;
+}
+
+.record-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.record-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: white;
+}
+
+/* 歷史紀錄卡片內容 */
+.card-header {
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.date {
+  font-size: 0.8rem;
+  color: #95a5a6;
+}
+
+.category-tag {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+/* 分類標籤顏色 */
+.tag-canned { background-color: #3498db; }
+.tag-pouch { background-color: #9b59b6; }
+.tag-raw { background-color: #e74c3c; }
+.tag-dry { background-color: #e67e22; }
+.tag-litter { background-color: #7f8c8d; }
+
+.card-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.flavor {
+  font-weight: normal;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-left: 8px;
+}
+
+.card-notes {
+  background-color: #f9f9f9;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0;
+}
+
+.empty-state {
+  text-align: center;
+  color: #95a5a6;
+  padding: 20px;
+}
+
+/* --- 體重圖表樣式 --- */
+.chart-card {
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  /* 原本的樣式保留... */
+}
+
+.chart-title {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.weight-form {
+  margin-top: 10px;
+}
+
+/* --- 修改/刪除按鈕 (右上角的小圖示) --- */
+.card-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.edit-btn, .delete-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.4;
+  transition: all 0.2s;
+}
+
+.edit-btn:hover, .delete-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.edit-btn { color: #3498db; }
+.delete-btn { color: #e74c3c; }
+
+.record-card.being-edited {
+  border: 2px solid #e67e22;
+  background-color: #fffaf0;
+  transform: scale(1.02);
+  z-index: 5;
+}
+
+.cancel-btn {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
 }
