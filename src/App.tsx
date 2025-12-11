@@ -20,7 +20,6 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  Label
 } from 'recharts';
 
 // --- 常數設定 ---
