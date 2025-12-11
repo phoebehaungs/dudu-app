@@ -11,7 +11,7 @@ import {
   query, 
   orderBy 
 } from 'firebase/firestore';
-// 引入圖表套件 (已修正：移除了多餘的 Label)
+// 引入圖表套件
 import { 
   LineChart, 
   Line, 
@@ -21,6 +21,9 @@ import {
   Tooltip, 
   ResponsiveContainer
 } from 'recharts';
+
+// --- 🔥 引入標題的貓咪圖片 ---
+import duduLogo from './dudu-logo.png'; 
 
 // --- 常數設定 ---
 // 🎂 肚肚的生日
@@ -236,8 +239,11 @@ function App() {
   return (
     <div className="container">
       <header>
-        {/* 1. 修改標題 */}
-        <h1>肚肚の記錄</h1>
+        {/* 🔥 修改標題：加入圖片 */}
+        <h1>
+          <img src={duduLogo} className="title-icon" alt="肚肚的Logo" />
+          肚肚の記錄
+        </h1>
         <p className="subtitle">生日：2025/04/01</p>
         
         {/* 分頁切換按鈕 */}
@@ -246,7 +252,6 @@ function App() {
             className={`tab-btn ${currentTab === 'food' ? 'active' : ''}`}
             onClick={() => setCurrentTab('food')}
           >
-            {/* 2. 修改頁籤名稱 */}
             🥫各類用品
           </button>
           <button 
@@ -266,7 +271,6 @@ function App() {
               {editingId ? (
                  <h3 style={{color: '#e67e22', margin: 0}}>✏️ 修改記錄</h3>
                ) : (
-                 // 3. 修改新增標題
                  <h3 style={{margin: 0}}>新增一筆記錄</h3>
                )}
                {editingId && (
