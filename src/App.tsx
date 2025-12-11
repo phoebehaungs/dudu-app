@@ -11,7 +11,7 @@ import {
   query, 
   orderBy 
 } from 'firebase/firestore';
-// 引入圖表套件 
+// 引入圖表套件  
 import { 
   LineChart, 
   Line, 
