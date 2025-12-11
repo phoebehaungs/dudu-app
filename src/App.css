@@ -1,8 +1,8 @@
 /* --- 全域設定 --- */
 :root {
-  --primary-color: #f39c12; /* 橘色系 */
+  --primary-color: #f39c12;
   --secondary-color: #e67e22;
-  --bg-color: #fdfbf7; /* 溫暖的米色背景 */
+  --bg-color: #fdfbf7;
   --text-color: #2c3e50;
   --card-bg: #ffffff;
   --gold: #f1c40f;
@@ -10,9 +10,7 @@
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -26,12 +24,13 @@ body {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
+  padding-bottom: 50px;
 }
 
-/* --- Header --- */
+/* --- Header & Tabs --- */
 header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 h1 {
@@ -46,7 +45,32 @@ h1 {
   margin-top: 0;
 }
 
-/* --- 卡片通用樣式 --- */
+.tab-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.tab-btn {
+  padding: 8px 20px;
+  border: none;
+  background: #eee;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #7f8c8d;
+  transition: all 0.3s;
+}
+
+.tab-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.4);
+}
+
+/* --- 卡片通用 --- */
 .card-elevation {
   background: var(--card-bg);
   border-radius: 16px;
@@ -56,14 +80,9 @@ h1 {
   transition: transform 0.2s;
 }
 
-/* --- 輸入表單區域 --- */
-.input-card {
-  border-top: 5px solid var(--primary-color);
-}
-
-.editing-mode {
-  border-top: 5px solid #e67e22; /* 修改模式下邊框顏色變深 */
-}
+/* --- 飲食紀錄相關 --- */
+.input-card { border-top: 5px solid var(--primary-color); }
+.editing-mode { border-top: 5px solid #e67e22; }
 
 .form-header {
   display: flex;
@@ -74,21 +93,9 @@ h1 {
   padding-bottom: 10px;
 }
 
-.form-row {
-  display: flex;
-  gap: 15px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 5px;
-  font-size: 0.9rem;
-}
+.form-row { display: flex; gap: 15px; }
+.form-group { margin-bottom: 15px; }
+label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
 
 .styled-input, select {
   width: 100%;
@@ -98,204 +105,88 @@ label {
   font-size: 1rem;
   background-color: #fff;
 }
-
 .styled-input:focus, select:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2);
 }
+textarea.styled-input { resize: vertical; }
 
-textarea.styled-input {
-  resize: vertical;
-}
+/* 星星 */
+.star-rating { font-size: 1.5rem; cursor: pointer; color: var(--muted-gray); }
+.star.filled { color: var(--gold); }
 
-/* 星星評分 */
-.star-rating {
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--muted-gray);
-}
-
-.star.filled {
-  color: var(--gold);
-}
-
+/* 按鈕 */
 .submit-btn {
-  width: 100%;
-  padding: 12px;
+  width: 100%; padding: 12px;
   background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  color: white; border: none; border-radius: 8px;
+  font-size: 1.1rem; font-weight: bold; cursor: pointer;
+  transition: filter 0.3s;
 }
+.submit-btn:hover { filter: brightness(1.1); }
+.submit-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
 
-.submit-btn:hover {
-  filter: brightness(1.1);
-}
-
-.submit-btn:disabled {
-  background-color: #bdc3c7;
-  cursor: not-allowed;
-}
-
-/* --- 歷史紀錄清單 --- */
+/* 列表區 */
 .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;
 }
-
-.filter-controls {
-  display: flex;
-  gap: 10px;
-}
-
-.filter-select {
-  padding: 5px 10px;
-  border-radius: 20px;
-  border: 1px solid #ddd;
-  font-size: 0.85rem;
-  background: white;
-}
-
-.record-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+.filter-controls { display: flex; gap: 10px; }
+.filter-select { padding: 5px 10px; border-radius: 20px; border: 1px solid #ddd; font-size: 0.85rem; background: white; }
+.record-list { list-style: none; padding: 0; margin: 0; }
 
 .record-card {
-  position: relative; /* 重要：讓右上角的按鈕可以定位 */
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  position: relative;
+  display: flex; flex-direction: column; gap: 8px;
   background: white;
 }
-
-/* --- 卡片內容 --- */
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.date {
-  font-size: 0.8rem;
-  color: #95a5a6;
-}
-
-.category-tag {
-  font-size: 0.75rem;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-weight: bold;
-  color: white;
-}
-
-/* 分類標籤顏色 */
+.card-header { display: flex; align-items: center; gap: 10px; }
+.date { font-size: 0.8rem; color: #95a5a6; }
+.category-tag { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; font-weight: bold; color: white; }
 .tag-canned { background-color: #3498db; }
 .tag-pouch { background-color: #9b59b6; }
 .tag-raw { background-color: #e74c3c; }
 .tag-dry { background-color: #e67e22; }
 .tag-litter { background-color: #7f8c8d; }
 
-.card-main {
+.card-main { display: flex; justify-content: space-between; align-items: baseline; }
+.card-title { font-weight: bold; font-size: 1.1rem; }
+.flavor { font-weight: normal; font-size: 0.9rem; color: #7f8c8d; margin-left: 8px; }
+.card-notes { background-color: #f9f9f9; padding: 8px; border-radius: 6px; font-size: 0.9rem; color: #555; margin: 0; }
+.empty-state { text-align: center; color: #95a5a6; padding: 20px; }
+
+/* --- 體重圖表樣式 --- */
+.chart-card {
+  min-height: 350px;
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+.chart-title { margin-top: 0; margin-bottom: 20px; color: #2c3e50; }
+.weight-form { margin-top: 10px; }
 
-.card-title {
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.flavor {
-  font-weight: normal;
-  font-size: 0.9rem;
-  color: #7f8c8d;
-  margin-left: 8px;
-}
-
-.card-notes {
-  background-color: #f9f9f9;
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  color: #555;
-  margin: 0;
-}
-
-.empty-state {
-  text-align: center;
-  color: #95a5a6;
-  padding: 20px;
-}
-
-/* --- 🔥 新增功能樣式：修改與刪除按鈕 --- */
-
-/* 按鈕群組：固定在卡片右上角 */
+/* --- 修改/刪除按鈕 --- */
 .card-actions {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  display: flex;
-  gap: 8px; /* 按鈕之間的距離 */
-  z-index: 10;
+  position: absolute; top: 12px; right: 12px;
+  display: flex; gap: 8px; z-index: 10;
 }
-
-/* 按鈕基本樣式 */
 .edit-btn, .delete-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0;
-  opacity: 0.4; /* 平常淡一點，看起來比較乾淨 */
-  transition: all 0.2s;
+  background: transparent; border: none;
+  font-size: 1.2rem; cursor: pointer; padding: 0;
+  opacity: 0.4; transition: all 0.2s;
 }
+.edit-btn:hover, .delete-btn:hover { opacity: 1; transform: scale(1.1); }
+.edit-btn { color: #3498db; }
+.delete-btn { color: #e74c3c; }
 
-/* 滑鼠移過去變清楚 */
-.edit-btn:hover, .delete-btn:hover {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-.edit-btn {
-  color: #3498db; /* 藍色筆 */
-}
-
-.delete-btn {
-  color: #e74c3c; /* 紅色叉 */
-}
-
-/* 正在被編輯的卡片 */
 .record-card.being-edited {
-  border: 2px solid #e67e22; /* 橘色外框 */
-  background-color: #fffaf0; /* 淡淡的橘色背景 */
-  transform: scale(1.02);
-  z-index: 5;
+  border: 2px solid #e67e22; background-color: #fffaf0;
+  transform: scale(1.02); z-index: 5;
 }
-
-/* 取消修改按鈕 */
 .cancel-btn {
-  font-size: 0.8rem;
-  padding: 4px 10px;
-  background-color: #95a5a6;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.cancel-btn:hover {
-  background-color: #7f8c8d;
+  font-size: 0.8rem; padding: 4px 10px;
+  background-color: #95a5a6; color: white;
+  border: none; border-radius: 12px; cursor: pointer;
 }
