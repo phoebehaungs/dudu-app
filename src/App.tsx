@@ -21,15 +21,15 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-// 引入圖片
+// 引入圖片 (請確保圖片還在 src 資料夾)
 import duduLogo from './dudu-logo.png'; 
 
 // --- 常數設定 ---
 const DUDU_BIRTHDAY = "2025-04-01";
 
-// --- 型別定義 ---
-type CategoryType = 'canned' | 'pouch' | 'dry' | 'litter' | 'raw';
-type TabType = 'food' | 'weight' | 'shopping'; // 新增 shopping 頁籤
+// --- 型別定義 (新增了 貓玩具、保養品、貓用品、其他) ---
+type CategoryType = 'canned' | 'pouch' | 'dry' | 'litter' | 'raw' | 'toys' | 'care' | 'supplies' | 'other';
+type TabType = 'food' | 'weight' | 'shopping';
 
 interface FoodRecord {
   id: string;
@@ -49,13 +49,12 @@ interface WeightRecord {
   timestamp: number;
 }
 
-// 新增：待買清單的資料格式
 interface ShoppingItem {
   id: string;
   category: CategoryType;
-  name: string;      // 產品名稱
-  note: string;      // 備註 (例如：等特價再買)
-  isBought: boolean; // 是否已購買
+  name: string;      
+  note: string;      
+  isBought: boolean; 
   timestamp: number;
 }
 
@@ -63,21 +62,30 @@ type BrandDatabase = {
   [key in CategoryType]: string[];
 };
 
-// --- 資料與常數 ---
+// --- 資料與常數 (新增選項) ---
 const categoryOptions: { value: CategoryType; label: string }[] = [
   { value: 'canned', label: '主食/副食罐頭' },
   { value: 'raw', label: '生食' },
   { value: 'pouch', label: '餐包' },
   { value: 'dry', label: '乾飼料' },
   { value: 'litter', label: '貓砂' },
+  { value: 'care', label: '保養品' },     // 新增
+  { value: 'toys', label: '貓玩具' },     // 新增
+  { value: 'supplies', label: '貓用品' }, // 新增
+  { value: 'other', label: '其他' },      // 新增
 ];
 
+// 預設品牌 (補上新分類的空陣列，避免程式報錯)
 const defaultBrandData: BrandDatabase = {
   canned: ["ZiwiPeak 巔峰", "K9 Natural", "Wellness", "Instinct 原點", "Thrive 脆樂芙", "Weruva 唯美味"],
   raw: ["Big Dog 大狗", "Primal", "K9 Natural (生食)", "汪喵星球", "卡尼", "心莫"], 
   pouch: ["Ciao", "Sheba", "Natural Balance", "Wellness"],
   dry: ["Orijen 渴望", "Acana 愛肯拿", "Nutrience 紐崔斯", "Halo"],
-  litter: ["EverClean 藍鑽", "Boxiecat", "OdourLock", "鐵鎚牌"]
+  litter: ["EverClean 藍鑽", "Boxiecat", "OdourLock", "鐵鎚牌"],
+  care: ["木入森", "毛孩時代", "汪喵星球"], // 幫你預填幾個常見的
+  toys: [],
+  supplies: [],
+  other: []
 };
 
 // --- 工具函式 ---
@@ -143,7 +151,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // 監聽待買清單資料 (依照時間排序，新加入的在上面)
+  // 監聽待買清單資料
   useEffect(() => {
     const q = query(collection(db, "shopping_list"), orderBy("timestamp", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -160,7 +168,6 @@ function App() {
   ]));
 
   // --- 送出功能區 ---
-
   const handleFoodSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!brand || !flavor || rating === 0) {
@@ -224,7 +231,7 @@ function App() {
         category,
         name: shopName,
         note: shopNote,
-        isBought: false, // 預設還沒買
+        isBought: false, 
         timestamp: Date.now()
       });
       setShopName('');
@@ -238,7 +245,6 @@ function App() {
   };
 
   // --- 操作功能區 ---
-
   const handleEdit = (rec: FoodRecord) => {
     setEditingId(rec.id);
     setCategory(rec.category);
@@ -261,7 +267,6 @@ function App() {
     }
   };
 
-  // 切換「已購買」狀態
   const toggleBought = async (item: ShoppingItem) => {
     try {
       await updateDoc(doc(db, "shopping_list", item.id), {
@@ -272,7 +277,6 @@ function App() {
     }
   };
 
-  // --- 圖表資料 ---
   const chartData = weightRecords.map(rec => ({
     ...rec,
     ageLabel: calculateAgeLabel(rec.date),
@@ -420,7 +424,7 @@ function App() {
         </>
       )}
 
-      {/* 頁面 2: 待買清單 (新增功能) */}
+      {/* 頁面 2: 待買清單 */}
       {currentTab === 'shopping' && (
         <div className="shopping-section">
           <div className="input-card card-elevation">
@@ -435,24 +439,12 @@ function App() {
                 </div>
                 <div className="form-group" style={{flex: 2}}>
                   <label>產品名稱</label>
-                  <input 
-                    type="text" 
-                    value={shopName} 
-                    onChange={(e) => setShopName(e.target.value)} 
-                    placeholder="例如：巔峰牛肉罐" 
-                    className="styled-input"
-                  />
+                  <input type="text" value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="例如：巔峰牛肉罐" className="styled-input"/>
                 </div>
               </div>
               <div className="form-group">
                 <label>備註 (可選)</label>
-                <input 
-                  type="text" 
-                  value={shopNote} 
-                  onChange={(e) => setShopNote(e.target.value)} 
-                  placeholder="例如：看到特價再買" 
-                  className="styled-input"
-                />
+                <input type="text" value={shopNote} onChange={(e) => setShopNote(e.target.value)} placeholder="例如：看到特價再買" className="styled-input"/>
               </div>
               <button type="submit" className="submit-btn" disabled={isSubmitting}>
                 {isSubmitting ? "新增中..." : "加入清單 ➕"}
@@ -467,35 +459,15 @@ function App() {
                 <p className="empty-state">目前清單空空的，沒有想買的東西嗎？</p>
               ) : (
                 shoppingList.map((item) => (
-                  <li 
-                    key={item.id} 
-                    className={`record-card card-elevation ${item.isBought ? 'bought-item' : ''}`}
-                    style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}
-                  >
+                  <li key={item.id} className={`record-card card-elevation ${item.isBought ? 'bought-item' : ''}`} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
                     <div style={{display: 'flex', alignItems: 'center', gap: '10px', flex: 1}}>
-                      {/* 打勾框框 */}
-                      <input 
-                        type="checkbox" 
-                        checked={item.isBought} 
-                        onChange={() => toggleBought(item)}
-                        style={{width: '20px', height: '20px', cursor: 'pointer'}}
-                      />
-                      
+                      <input type="checkbox" checked={item.isBought} onChange={() => toggleBought(item)} style={{width: '20px', height: '20px', cursor: 'pointer'}}/>
                       <div style={{opacity: item.isBought ? 0.5 : 1}}>
-                        <span className={`category-tag tag-${item.category}`} style={{marginRight: '8px'}}>
-                          {getCategoryLabel(item.category)}
-                        </span>
-                        <span className="card-title" style={{textDecoration: item.isBought ? 'line-through' : 'none'}}>
-                          {item.name}
-                        </span>
-                        {item.note && (
-                          <div style={{fontSize: '0.85rem', color: '#7f8c8d', marginTop: '4px'}}>
-                            {item.note}
-                          </div>
-                        )}
+                        <span className={`category-tag tag-${item.category}`} style={{marginRight: '8px'}}>{getCategoryLabel(item.category)}</span>
+                        <span className="card-title" style={{textDecoration: item.isBought ? 'line-through' : 'none'}}>{item.name}</span>
+                        {item.note && <div style={{fontSize: '0.85rem', color: '#7f8c8d', marginTop: '4px'}}>{item.note}</div>}
                       </div>
                     </div>
-
                     <button className="delete-btn" onClick={() => handleDelete(item.id, "shopping_list")}>×</button>
                   </li>
                 ))
@@ -515,17 +487,9 @@ function App() {
                 <ResponsiveContainer>
                   <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                     <CartesianGrid stroke="#f5f5f5" />
-                    <XAxis 
-                      dataKey="date" 
-                      tickFormatter={(date) => calculateAgeLabel(date)}
-                      stroke="#95a5a6"
-                      fontSize={12}
-                    />
+                    <XAxis dataKey="date" tickFormatter={(date) => calculateAgeLabel(date)} stroke="#95a5a6" fontSize={12} />
                     <YAxis unit="kg" stroke="#95a5a6" domain={['auto', 'auto']} />
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
-                      labelFormatter={(date) => `${date} (${calculateAgeLabel(date as string)})`}
-                    />
+                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }} labelFormatter={(date) => `${date} (${calculateAgeLabel(date as string)})`} />
                     <Line type="monotone" dataKey="weight" name="體重" stroke="#e67e22" strokeWidth={3} activeDot={{ r: 8 }} />
                   </LineChart>
                 </ResponsiveContainer>
