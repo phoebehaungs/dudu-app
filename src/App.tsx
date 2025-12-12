@@ -29,7 +29,7 @@ const DUDU_BIRTHDAY = "2025-04-01";
 
 // --- 型別定義 ---
 type CategoryType = 'canned' | 'pouch' | 'dry' | 'litter' | 'raw';
-type TabType = 'food' | 'weight'; 
+type TabType = 'food' | 'weight' | 'shopping'; // 新增 shopping 頁籤
 
 interface FoodRecord {
   id: string;
@@ -46,6 +46,16 @@ interface WeightRecord {
   id: string;
   weight: number;    
   date: string;      
+  timestamp: number;
+}
+
+// 新增：待買清單的資料格式
+interface ShoppingItem {
+  id: string;
+  category: CategoryType;
+  name: string;      // 產品名稱
+  note: string;      // 備註 (例如：等特價再買)
+  isBought: boolean; // 是否已購買
   timestamp: number;
 }
 
@@ -70,7 +80,7 @@ const defaultBrandData: BrandDatabase = {
   litter: ["EverClean 藍鑽", "Boxiecat", "OdourLock", "鐵鎚牌"]
 };
 
-// --- 工具函式：計算年齡 ---
+// --- 工具函式 ---
 const calculateAgeLabel = (dateString: string) => {
   const birth = new Date(DUDU_BIRTHDAY);
   const target = new Date(dateString);
@@ -103,6 +113,11 @@ function App() {
   const [weightInput, setWeightInput] = useState<string>('');
   const [measureDate, setMeasureDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
+  // 待買清單狀態
+  const [shoppingList, setShoppingList] = useState<ShoppingItem[]>([]);
+  const [shopName, setShopName] = useState('');
+  const [shopNote, setShopNote] = useState('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -128,10 +143,23 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // 監聽待買清單資料 (依照時間排序，新加入的在上面)
+  useEffect(() => {
+    const q = query(collection(db, "shopping_list"), orderBy("timestamp", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data: ShoppingItem[] = [];
+      snapshot.forEach((doc) => data.push({ id: doc.id, ...doc.data() } as ShoppingItem));
+      setShoppingList(data);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const availableBrands = Array.from(new Set([
     ...defaultBrandData[category], 
     ...foodRecords.filter(r => r.category === category).map(r => r.brand) 
   ]));
+
+  // --- 送出功能區 ---
 
   const handleFoodSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,6 +212,33 @@ function App() {
     }
   };
 
+  const handleShoppingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!shopName) {
+      alert("請輸入想買的東西名稱");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, "shopping_list"), {
+        category,
+        name: shopName,
+        note: shopNote,
+        isBought: false, // 預設還沒買
+        timestamp: Date.now()
+      });
+      setShopName('');
+      setShopNote('');
+    } catch (error) {
+      console.error(error);
+      alert("新增失敗");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --- 操作功能區 ---
+
   const handleEdit = (rec: FoodRecord) => {
     setEditingId(rec.id);
     setCategory(rec.category);
@@ -206,6 +261,18 @@ function App() {
     }
   };
 
+  // 切換「已購買」狀態
+  const toggleBought = async (item: ShoppingItem) => {
+    try {
+      await updateDoc(doc(db, "shopping_list", item.id), {
+        isBought: !item.isBought
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // --- 圖表資料 ---
   const chartData = weightRecords.map(rec => ({
     ...rec,
     ageLabel: calculateAgeLabel(rec.date),
@@ -225,18 +292,13 @@ function App() {
   return (
     <div className="container">
       <header>
-        {/* 🔥 修正：這裡用 style 強制設定圖片大小，絕對不會跑版 */}
         <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img 
             src={duduLogo} 
             alt="肚肚的Logo" 
             style={{ 
-              width: '60px',       // 強制寬度 60px
-              height: '60px',      // 強制高度 60px
-              borderRadius: '50%', // 圓形
-              objectFit: 'cover',  // 圖片內容填滿不變形
-              marginRight: '15px', // 右邊留空隙
-              boxShadow: '0 2px 5px rgba(0,0,0,0.2)' // 加一點陰影
+              width: '60px', height: '60px', borderRadius: '50%', 
+              objectFit: 'cover', marginRight: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' 
             }} 
           />
           肚肚の記錄
@@ -249,6 +311,12 @@ function App() {
             onClick={() => setCurrentTab('food')}
           >
             🥫各類用品
+          </button>
+          <button 
+            className={`tab-btn ${currentTab === 'shopping' ? 'active' : ''}`}
+            onClick={() => setCurrentTab('shopping')}
+          >
+            🛍️ 待買好物
           </button>
           <button 
             className={`tab-btn ${currentTab === 'weight' ? 'active' : ''}`}
@@ -352,7 +420,92 @@ function App() {
         </>
       )}
 
-      {/* 頁面 2: 體重追蹤 */}
+      {/* 頁面 2: 待買清單 (新增功能) */}
+      {currentTab === 'shopping' && (
+        <div className="shopping-section">
+          <div className="input-card card-elevation">
+            <h3 style={{margin: 0, marginBottom: '15px'}}>🛍️ 新增待買好物</h3>
+            <form onSubmit={handleShoppingSubmit}>
+              <div className="form-row">
+                <div className="form-group" style={{flex: 1}}>
+                  <label>種類</label>
+                  <select value={category} onChange={(e) => setCategory(e.target.value as CategoryType)} className="styled-input">
+                    {categoryOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                  </select>
+                </div>
+                <div className="form-group" style={{flex: 2}}>
+                  <label>產品名稱</label>
+                  <input 
+                    type="text" 
+                    value={shopName} 
+                    onChange={(e) => setShopName(e.target.value)} 
+                    placeholder="例如：巔峰牛肉罐" 
+                    className="styled-input"
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>備註 (可選)</label>
+                <input 
+                  type="text" 
+                  value={shopNote} 
+                  onChange={(e) => setShopNote(e.target.value)} 
+                  placeholder="例如：看到特價再買" 
+                  className="styled-input"
+                />
+              </div>
+              <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                {isSubmitting ? "新增中..." : "加入清單 ➕"}
+              </button>
+            </form>
+          </div>
+
+          <div className="records-section">
+            <h3>購物清單 ({shoppingList.filter(i => !i.isBought).length} 項待買)</h3>
+            <ul className="record-list">
+              {shoppingList.length === 0 ? (
+                <p className="empty-state">目前清單空空的，沒有想買的東西嗎？</p>
+              ) : (
+                shoppingList.map((item) => (
+                  <li 
+                    key={item.id} 
+                    className={`record-card card-elevation ${item.isBought ? 'bought-item' : ''}`}
+                    style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}
+                  >
+                    <div style={{display: 'flex', alignItems: 'center', gap: '10px', flex: 1}}>
+                      {/* 打勾框框 */}
+                      <input 
+                        type="checkbox" 
+                        checked={item.isBought} 
+                        onChange={() => toggleBought(item)}
+                        style={{width: '20px', height: '20px', cursor: 'pointer'}}
+                      />
+                      
+                      <div style={{opacity: item.isBought ? 0.5 : 1}}>
+                        <span className={`category-tag tag-${item.category}`} style={{marginRight: '8px'}}>
+                          {getCategoryLabel(item.category)}
+                        </span>
+                        <span className="card-title" style={{textDecoration: item.isBought ? 'line-through' : 'none'}}>
+                          {item.name}
+                        </span>
+                        {item.note && (
+                          <div style={{fontSize: '0.85rem', color: '#7f8c8d', marginTop: '4px'}}>
+                            {item.note}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <button className="delete-btn" onClick={() => handleDelete(item.id, "shopping_list")}>×</button>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* 頁面 3: 體重追蹤 */}
       {currentTab === 'weight' && (
         <div className="weight-section">
           <div className="chart-card card-elevation">
